@@ -13,7 +13,7 @@
     "react-scripts": "4.0.3",
     "web-vitals": "^1.1.1",
     "@material-ui/core": "^1.5.1",
-    "@material-ui/icons": "^1.1.1",
+    "@material-ui/icons": "^1.1.1"
   },
   "scripts": {
     "start": "react-scripts start",
