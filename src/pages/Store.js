@@ -1,24 +1,16 @@
-import React from 'react';
-import AppBar from '@material-ui/core/AppBar';
-// import Button from '@material-ui/core/Button';
-// import Card from '@material-ui/core/Card';
-// import CardActions from '@material-ui/core/CardActions';
-// import CardContent from '@material-ui/core/CardContent';
-// import CardMedia from '@material-ui/core/CardMedia';
-// import TextField from '@material-ui/core/TextField';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-// import Grid from '@material-ui/core/Grid';
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-
 import Container from '@material-ui/core/Container';
-
 import Link from '@material-ui/core/Link';
-
-import BreadProduct from '../components/BreadProduct.js';
-import RiceProduct from '../components/RiceProduct.js';
-//import service from './../services/StoreService.js';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Button from '@material-ui/core/Button';
+import service from '../clientService/DigiSellService';
+import Grid from '@material-ui/core/Grid';
+import Cookies from 'universal-cookie';
 
 
 function Copyright() {
@@ -35,6 +27,13 @@ function Copyright() {
 }
 
 const useStyles = makeStyles((theme) => ({
+  margin: {
+    margin: theme.spacing(1),
+    marginTop: 50,
+    marginLeft: 300,
+    top: "50%",
+    left: "50%",
+  },
   icon: {
     marginRight: theme.spacing(2),
   },
@@ -66,30 +65,49 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-//const cards = [BreadProduct, RiceProduct];
+const cookies = new Cookies();
 
-export default function Album() {
+export default function Album(event) {
 
-  //const [cart, setCart] = useState();
-
+  const [products, setProducts] = useState([]);
+  const [cart] = useState([]);
   const classes = useStyles();
+  const [user, setUser] = useState();
+
+  const fetchData = async () => {
+
+    let productsArray = await service.getProducts();
+    setUser(cookies.get('user'))
+    console.log("Products", productsArray)
+    setProducts(productsArray)
+  }
+
+  const addToCart = (product) => {
+    alert(product.productName + " was added to the cart")
+    cart.push(product);
+  }
+
+  const checkout = async () => {
+    await service.checkout(cart)
+    while (cart.length > 0) {
+      cart.pop();
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
 
   return (
     <React.Fragment>
       <CssBaseline />
-      <AppBar position="relative">
-        <Toolbar>
-          <Typography variant="h6" color="inherit" noWrap>
-            DigiSell
-          </Typography>
-        </Toolbar>
-      </AppBar>
       <main>
         {/* Hero unit */}
         <div className={classes.heroContent}>
           <Container maxWidth="sm">
             <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
-              DigiSell Store
+              Welcome to DigiSell Store {user?.firstName}
             </Typography>
             <Typography variant="h5" align="center" color="textSecondary" paragraph>
               Buy our products! They are all very high quality! <br /> No refunds.
@@ -97,33 +115,51 @@ export default function Album() {
           </Container>
         </div>
         <Container className={classes.cardGrid} maxWidth="md">
-          {/* End hero unit */}
-
-          {/* Cards of Products go here. Not showing up. IDK why.  */}
-          {/* <Grid container spacing={4}>
-            {cards.map((card) => (
-              <Grid item key={card} xs={12} sm={6} md={4}> */}
-                <BreadProduct /> 
-                <br />
-                <RiceProduct />
-              {/* </Grid>
-            ))}
-          </Grid> */}
-
-
+          <div>
+            <Grid container>
+              <Grid xs={2}></Grid>
+              <Grid className={classes.card}>
+                <Grid container spacing={2} direction='row'>
+                  {products?.map((product) =>
+                    <Grid item key={product._id} >
+                      <Card className={classes.card}>
+                        <CardContent className={classes.cardContent}>
+                          <Typography gutterBottom variant="h5" component="h2">
+                            {product?.productName}
+                          </Typography>
+                          <Typography>
+                            {product?.productDescription}
+                          </Typography>
+                        </CardContent>
+                        <CardActions>
+                          <Button  onClick={() => addToCart(product)} size="small" color="primary">
+                            Add
+                          </Button>
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  )}
+                </Grid>
+            </Grid>
+            </Grid>
+            <Button onClick={() => checkout()} className={classes.margin} variant="contained" size="large" color="primary">
+              Check Out
+            </Button>
+          </div>
+        <br />
         </Container>
       </main>
-      {/* Footer */}
-      <footer className={classes.footer}>
-        <Typography variant="h6" align="center" gutterBottom>
-          DigiSell
+      {/* Footer */ }
+  <footer className={classes.footer}>
+    <Typography variant="h6" align="center" gutterBottom>
+      DigiSell
         </Typography>
-        <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-          Legal stuff here.
+    <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
+      Legal stuff here.
         </Typography>
-        <Copyright />
-      </footer>
-      {/* End footer */}
-    </React.Fragment>
+    <Copyright />
+  </footer>
+  {/* End footer */ }
+    </React.Fragment >
   );
 }
